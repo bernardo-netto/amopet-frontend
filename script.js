@@ -168,12 +168,34 @@ function confirmAdoption() {
   });
 
   // Exibe mensagem e retorna ao login após criar nova conta
-  botaoCriar.addEventListener('click', (event) => {
+  /*botaoCriar.addEventListener('click', (event) => {
     event.preventDefault(); // Impede o envio real do formulário
     alert('Conta criada com sucesso!');
     formCriarConta.style.display = 'none'; // Oculta o formulário de criação
     formLogin.style.display = 'block'; // Exibe o formulário de login
-  });
+  });*/
+
+  botaoCriar.addEventListener('click', (event) => {
+    event.preventDefault(); // Impede o envio real do formulário
+
+    // Cria um objeto FormData para enviar os dados do formulário
+    const formData = new FormData(formCriarConta);
+
+    fetch('index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data); // Exibe a resposta do servidor (mensagem de sucesso ou erro)
+        formCriarConta.style.display = 'none'; // Oculta o formulário de criação
+        formLogin.style.display = 'block'; // Exibe o formulário de login
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Ocorreu um erro ao criar a conta. Tente novamente.');
+    });
+});
 
 
 
