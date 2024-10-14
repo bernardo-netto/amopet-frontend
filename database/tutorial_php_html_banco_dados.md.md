@@ -68,13 +68,16 @@ $conn->close(); // Fecha a conexão
 ?>
 
 
+```
 
 
 
+## Instruções de Uso
 
-Instruções de Uso
-Configuração: Ajuste o arquivo config.php com suas credenciais de banco de dados.
-Criação de Formulário: Crie um formulário HTML para capturar os dados dos usuários.
-Teste: Execute o script em um servidor local e teste as funcionalidades.
-Considerações Finais
-Integrar PHP com HTML oferece flexibilidade na criação de aplicações web. Este exemplo é um ponto de partida para projetos mais complexos.
+- Configuração: Ajuste o arquivo config.php com suas credenciais de banco de dados.
+- Criação de Formulário: Crie um formulário HTML para capturar os dados dos usuários.
+- Teste: Execute o script em um servidor local e teste as funcionalidades.
+
+## Considerações Finais
+
+- Integrar PHP com HTML oferece flexibilidade na criação de aplicações web. Este exemplo é um ponto de partida para projetos mais complexos.
