@@ -1,3 +1,73 @@
+<?php
+include 'config.php'; // Inclui o arquivo de configuração para conexão com o banco de dados
+
+// Verifica se o método de requisição é POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Verifica se o botão de envio do formulário de redefinição de senha foi pressionado
+    if (isset($_POST['campoEmailRedefinir'])) {
+        $email = $conn->real_escape_string($_POST['campoEmailRedefinir']);
+
+        // Verifica se o e-mail existe no banco de dados
+        $sql = "SELECT * FROM usuarios WHERE email='$email'";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            // Gera um link para redefinir a senha (simples, sem token)
+            $link = "http://localhost/bernardo/amopet/redirecionar_redefinicao.php?email=" . urlencode($email);
+
+            // Ou esse para o ambiente de produção no Netlify:
+            // $link = "https://670ad5af3bff200008609850--amopet-front-end.netlify.app/#/redirecionar_redefinicao.php?email=" . urlencode($email);
+
+            $mensagem = "Clique no seguinte link para redefinir sua senha: " . $link;
+
+            // Envio do e-mail
+            mail($email, "Redefinir Senha", $mensagem);
+
+            echo "Um e-mail foi enviado para você com instruções para redefinir sua senha.";
+        } else {
+            echo "E-mail não encontrado.";
+        }
+    }
+
+    // Verifica se o botão de envio do formulário de criação de conta foi pressionado
+    if (isset($_POST['submit'])) {
+        // Escapa os dados de entrada para prevenir SQL Injection
+        $email = $conn->real_escape_string($_POST['campoNovoEmail']);
+        $nome_usuario = $conn->real_escape_string($_POST['campoNovoUsuario']);
+        // Criptografa a senha antes de armazená-la
+        $senha = password_hash($_POST['campoNovaSenha'], PASSWORD_DEFAULT);
+        $data_nascimento = $_POST['campoDataNascimento']; // Captura a data de nascimento
+        $genero = $conn->real_escape_string($_POST['campoGenero']); // Escapa o gênero
+
+        // Cria a consulta SQL para inserir dados na tabela usuarios
+        $sql_usuarios = "INSERT INTO usuarios (email, nome_usuario, senha, data_nascimento, genero) VALUES ('$email', '$nome_usuario', '$senha', '$data_nascimento', '$genero')";
+
+        // Executa a consulta para inserir o usuário
+        if ($conn->query($sql_usuarios) === TRUE) {
+            // Se a inserção for bem-sucedida, insere também na tabela logins
+            $sql_login = "INSERT INTO logins (email, senha) VALUES ('$email', '$senha')";
+            // Executa a consulta para inserir o login
+            if ($conn->query($sql_login) === TRUE) {
+                // echo "Conta criada com sucesso!"; // Removido para não exibir mensagem
+            } else {
+                // Exibe mensagem de erro caso a inserção na tabela logins falhe
+                echo "Erro ao inserir no logins: " . $conn->error;
+            }
+        } else {
+            // Exibe mensagem de erro caso a inserção na tabela usuarios falhe
+            echo "Erro ao inserir no usuários: " . $conn->error;
+        }
+    }
+}
+
+$conn->close(); // Fecha a conexão com o banco de dados
+?>
+
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -314,34 +384,37 @@
                             <h2>Cães Disponíveis para Adoção</h2>
                             <div class="card-container">
                                 <div class="card">
+                                    <!--
                                     <img src="https://via.placeholder.com/300x200" alt="Cão 1">
+                                    -->
+                                    <img src="imagem/modal-cão/cão - Sophie.jpeg" alt="">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
-                                        <div class="name">Rex</div>
-                                        <div class="details">Idade: 3 anos<br>Sexo: Masculino<br>ONG: Cão Feliz</div>
-                                        <button class="adopt-button" onclick="openAdoptModal('Rex')">Adotar</button>
+                                        <div class="name">Sophie</div>
+                                        <div class="details">Idade: 5 meses<br>Sexo: Fêmea<br>ONG: Cão Feliz</div>
+                                        <button class="adopt-button" onclick="openAdoptModal('Sophie')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 2">
+                                    <img src="imagem/modal-cão/cão - Alex.jpeg" alt="Cão 2">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
-                                        <div class="name">Bobby</div>
-                                        <div class="details">Idade: 2 anos<br>Sexo: Masculino<br>ONG: Amigos dos Animais</div>
-                                        <button class="adopt-button" onclick="openAdoptModal('Bobby')">Adotar</button>
+                                        <div class="name">Alex</div>
+                                        <div class="details">Idade: 7 meses<br>Sexo: Macho<br>ONG: Amigos dos Animais</div>
+                                        <button class="adopt-button" onclick="openAdoptModal('Alex')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 3">
+                                    <img src="imagem/modal-cão/cão - Fido.jpeg" alt="Cão 3">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Fido</div>
-                                        <div class="details">Idade: 4 anos<br>Sexo: Masculino<br>ONG: Patas e Focinhos</div>
+                                        <div class="details">Idade: 2 meses<br>Sexo: Macho<br>ONG: Patas e Focinhos</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Fido')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 4">
+                                    <img src="imagem/modal-cão/cão - Luna.jpeg" alt="Cão 4">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Luna</div>
@@ -350,39 +423,39 @@
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 5">
+                                    <img src="imagem/modal-cão/cão - Zeus.jpeg" alt="Cão 5">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Zeus</div>
-                                        <div class="details">Idade: 5 anos<br>Sexo: Masculino<br>ONG: Adote um Amigo</div>
+                                        <div class="details">Idade: 5 anos<br>Sexo: Macho<br>ONG: Adote um Amigo</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Zeus')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 6">
+                                    <img src="imagem/modal-cão/cão - Bella.jpeg" alt="Cão 6">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Bella</div>
-                                        <div class="details">Idade: 3 anos<br>Sexo: Fêmea<br>ONG: Cão Amigo</div>
+                                        <div class="details">Idade: 3 meses<br>Sexo: Fêmea<br>ONG: Cão Amigo</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Bella')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 7">
+                                    <img src="imagem/modal-cão/cão - Max.jpeg" alt="Cão 7">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Max</div>
-                                        <div class="details">Idade: 6 anos<br>Sexo: Masculino<br>ONG: Amor de Patas</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Macho<br>ONG: Amor de Patas</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Max')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Cão 8">
+                                    <img src="imagem/modal-cão/cão - Carminha.jpeg" alt="Cão 8">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
-                                        <div class="name">Sophie</div>
-                                        <div class="details">Idade: 2 anos<br>Sexo: Fêmea<br>ONG: Cães do Amanhã</div>
-                                        <button class="adopt-button" onclick="openAdoptModal('Sophie')">Adotar</button>
+                                        <div class="name">Carminha</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Fêmea<br>ONG: Cães do Amanhã</div>
+                                        <button class="adopt-button" onclick="openAdoptModal('Carminha')">Adotar</button>
                                     </div>
                                 </div>
                             </div>
@@ -396,43 +469,43 @@
                             <h2>Gatos Disponíveis para Adoção</h2>
                             <div class="card-container">
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 1">
+                                    <img src="imagem/modal-gato/gata - Mimi.jpeg" alt="Gato 1">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Mimi</div>
-                                        <div class="details">Idade: 2 anos<br>Sexo: Fêmea<br>ONG: Amigos dos Gatos</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Fêmea<br>ONG: Amigos dos Gatos</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Mimi')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 2">
+                                    <img src="imagem/modal-gato/gato - Oliver.jpeg" alt="Gato 2">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Oliver</div>
-                                        <div class="details">Idade: 1 ano<br>Sexo: Masculino<br>ONG: Protetores de Gatos</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Macho<br>ONG: Protetores de Gatos</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Oliver')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 3">
+                                    <img src="imagem/modal-gato/gata - Lili.jpeg" alt="Gato 3">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Lili</div>
-                                        <div class="details">Idade: 3 anos<br>Sexo: Fêmea<br>ONG: Gatos da Rua</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Fêmea<br>ONG: Gatos da Rua</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Lili')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 4">
+                                    <img src="imagem/modal-gato/gato - Simba.jpeg" alt="Gato 4">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Simba</div>
-                                        <div class="details">Idade: 4 anos<br>Sexo: Masculino<br>ONG: Resgate Animal</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Masculino<br>ONG: Resgate Animal</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Simba')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 5">
+                                    <img src="imagem/modal-gato/gata - Nina.jpeg" alt="Gato 5">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Nina</div>
@@ -441,29 +514,29 @@
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 6">
+                                    <img src="imagem/modal-gato/gato - Tico.jpeg" alt="Gato 6">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Tico</div>
-                                        <div class="details">Idade: 5 anos<br>Sexo: Masculino<br>ONG: Adoção Felina</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Masculino<br>ONG: Adoção Felina</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Tico')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 7">
+                                    <img src="imagem/modal-gato/gato - Apollo.jpeg" alt="Gato 7">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
-                                        <div class="name">Gato</div>
-                                        <div class="details">Idade: 3 anos<br>Sexo: Masculino<br>ONG: Projeto Gato</div>
-                                        <button class="adopt-button" onclick="openAdoptModal('Gato')">Adotar</button>
+                                        <div class="name">Apollo</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Masculino<br>ONG: Projeto Gato</div>
+                                        <button class="adopt-button" onclick="openAdoptModal('Apollo')">Adotar</button>
                                     </div>
                                 </div>
                                 <div class="card">
-                                    <img src="https://via.placeholder.com/300x200" alt="Gato 8">
+                                    <img src="imagem/modal-gato/gata - Flora.jpeg" alt="Gato 8">
                                     <div class="color-bar"></div> <!-- Risco colorido na parte inferior da imagem -->
                                     <div class="info">
                                         <div class="name">Flora</div>
-                                        <div class="details">Idade: 4 anos<br>Sexo: Fêmea<br>ONG: Felinos de São Paulo</div>
+                                        <div class="details">Idade: 1 ano<br>Sexo: Fêmea<br>ONG: Felinos de São Paulo</div>
                                         <button class="adopt-button" onclick="openAdoptModal('Flora')">Adotar</button>
                                     </div>
                                 </div>
